@@ -1,21 +1,42 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="utf-8">
     <title>演習課題5-2：外部APIの呼び出しテスト</title>
 </head>
 <body>
-    <h1 id="msg">何かのAPI</h1>
+    <h1 id="msg">天気情報API</h1>
     <form name="apiform"><p>
-        何かのフォーム：<input type="text" name="form_data">
+        都市名：<input type="text" name="city">
         <button type="button" id="btn1" onclick="some_api(this.form)">実行</button>
     </p></form>
     
-    <div id="result"></div>
+    <div id="result">結果はここに表示</div>
     <script>
         async function some_api(myForm) {
-            // ここにコードを書く
-            document.getElementById("result").innerHTML += myForm.form_data.value+"<br />";
-            document.apiform.reset();
+            const endpoint = "https://wttr.in/";
+
+            const city = myForm.city.value.trim();
+            if (city === "") {
+                document.getElementById("result").innerHTML = "都市名を入力してください";
+                return;
+            }
+
+            try {
+                const url      = endpoint + encodeURIComponent(city) + "?format=j1";
+                const response = await fetch(url);
+                const data     = await response.json();
+
+                const now  = data.current_condition[0];
+                const desc = now.weatherDesc[0].value;
+                const temp = now.temp_C;
+
+                document.getElementById("result").innerHTML =
+                    `天気：${desc}<br>気温：${temp}℃`;
+            } catch (error) {
+                document.getElementById("result").innerHTML =
+                    `通信エラー発生：${error}`;
+            }
         }
     </script>
 </body>
